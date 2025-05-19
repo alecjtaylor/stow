@@ -1,0 +1,15 @@
+C10018 "/home/alecjtaylor/Documents/REAPER Media/Idea 3/Media"
+F "02-Left Guitar-250414_1252.wav" 1525170 0 1744631589 0
+D y 2025-04-14 s 44100 n 1 l 0:11.523
+D i 24
+F "02-Left Guitar-250414_1256.wav" 1409202 0 1744631788 0
+D y 2025-04-14 s 44100 n 1 r 0:10.667
+D l 0:10.646 i 24
+F "03-Right Guitar-250414_1253.wav" 2926002 0 1744631641 0
+D y 2025-04-14 s 44100 n 1 l 0:22.111
+D i 24
+F "03-Right Guitar-250414_1256.wav" 1489842 0 1744631819 0
+D y 2025-04-14 s 44100 n 1 r 0:10.667
+D l 0:11.256 i 24
+F 90-bpm-looperman-l-3126333-0248056-rock-drum-main-groove-including-fill.wav 1881644 0 1744454220 0
+D s 44100 n 2 l 0:10.667 i 16
