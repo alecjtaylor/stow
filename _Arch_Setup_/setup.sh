@@ -1,13 +1,20 @@
 #!/bin/bash
 
+#######################
+### Functions below ###
+#######################
+
 # Print the logo
 print_logo() {
     cat << "EOF"
-     _       _  ____ _____ 
-    / \     | |/ ___|_   _|
-   / _ \ _  | | |     | |  
-  / ___ \ |_| | |___  | |    Set up Arch Linux  
- /_/   \_\___/ \____| |_|    by AJCT
+#####################################################
+#      _       _  ____ _____                        #
+#     / \     | |/ ___|_   _|                       #
+#    / _ \ _  | | |     | |                         #
+#   / ___ \ |_| | |___  | |    Set up Arch Linux    #
+#  /_/   \_\___/ \____| |_|    by AJCT              #
+#                                                   #
+#####################################################
 
 EOF
 }
@@ -65,31 +72,26 @@ replace_line_in_file() {
   printf "Line replaced in '$file'. \n $escaped_search was replaced with $escaped_replacement. \nBackup saved as '$file.bak'.\n\n"
 }
 
-check_running_with_sudo() {
-  if [[ "$EUID" -ne 0 ]]; then
-    echo "This script must be run with sudo."
-    return 1
-  fi
-
-  if [[ -z "$SUDO_USER" ]]; then
-    echo "You are root, but did not use sudo to run this script."
-    return 2
-  fi
-
-  echo "Running with sudo as user: $SUDO_USER"
-  return 0
-}
-
-#check_running_with_sudo || exit 1
+#####################
+### Start of code ###
+#####################
 
 # print vanity logo
 clear
 print_logo
 
+#TODO - confirm what system is running
+
+
+
+
+#TODO move to function depending on what type of system is running
 # Update the system first
 echo "Updating system..."
 sudo pacman -Syu --noconfirm
 
+
+#TODO check if arch and install AUR if not present. 
 # Install yay AUR helper if not present
 if ! command -v yay &> /dev/null; then
   echo "Installing yay AUR helper..."
@@ -112,6 +114,7 @@ else
   echo "yay is already installed"
 fi
 
+
 #set up pacman 
 install_packages "reflector"
 printf "\nconfiguring pacman for speed....\n"
@@ -128,6 +131,8 @@ replace_line_in_file "/etc/pacman.conf" "# Misc options" "ILoveCandy"
 replace_line_in_file "/etc/pacman.conf" "#VerbosePkgLists" "VerbosePkgLists"
 
 
+
+#TODO split up into base utils for all then distro specific tools
 # import data from pacages config file
 source packages.conf
 
@@ -144,60 +149,60 @@ esac
 
 read -p "Do you want to customise SDDM as a login manager? (y/n): " yn
 case $yn in
-		[Yy]* ) 
-				{
-						sudo sddm --example-config | sudo tee /etc/sddm.conf > /dev/null 
-						replace_line_in_file "/etc/sddm.conf" "Current=" "Current=sddm-sugar-dark" 
-				}
-				;;
-		[Nn]* ) ;;
-		* ) echo "Please enter 'y' or 'n'.";;
+        [Yy]* )
+                {
+                        sudo sddm --example-config | sudo tee /etc/sddm.conf > /dev/null
+                        replace_line_in_file "/etc/sddm.conf" "Current=" "Current=sddm-sugar-dark"
+                }
+                ;;
+        [Nn]* ) ;;
+        * ) echo "Please enter 'y' or 'n'.";;
 esac
 
 read -p "Do you want to select the services to start? (y/n): " yn
 case $yn in
-		[Yy]* ) 
-				{
-				echo "Starting Syncthing..." 
-				systemctl --user enable syncthing.service 
-				systemctl --user start syncthing.service 
+        [Yy]* )
+                {
+                echo "Starting Syncthing..."
+                systemctl --user enable syncthing.service
+                systemctl --user start syncthing.service
                 printf "Please configure Syncthing to bring down the 'stow' folder to this machine. "
                 sleep 4 
-				xdg-open "http://127.0.0.1:8384/"
-				} ;;
+                xdg-open "http://127.0.0.1:8384/"
+                } ;;
 
-		[Nn]* ) ;;
-		* ) echo "please enter yes or no.";;
+        [Nn]* ) ;;
+        * ) echo "please enter yes or no.";;
 esac
 
 
 read -p "Do you want to set up stow config linking now? (y/n): " yn
 case $yn in
-		[Yy]* )
-				{
-				if command -v stow >/dev/null 2>&1; then
-				    printf "Stow is now installed, checked for local directory..."
-				    if [ -d "~/stow" ]; then
-						cd "~/stow"
-						rm ~/.bashrc 
-						stow bash
-						stow starship
-						stow fastfetch
-						stow nvim
-						stow vim
-						stow wallpaper
-						stow kitty
-						stow hypr
-						stow waybar
-						stow yay
-						stow reaper
-						stow ranger
-						stow wofi
-				    fi
-				fi
-				};;
-		[Nn]* ) ;;
-		* ) echo "Please enter 'y' or 'no'.";;
+        [Yy]* )
+                {
+                if command -v stow >/dev/null 2>&1; then
+                    printf "Stow is now installed, checked for local directory..."
+                    if [ -d "~/stow" ]; then
+                        cd "~/stow"
+                        rm ~/.bashrc
+                        stow bash
+                        stow starship
+                        stow fastfetch
+                        stow nvim
+                        stow vim
+                        stow wallpaper
+                        stow kitty
+                        stow hypr
+                        stow waybar
+                        stow yay
+                        stow reaper
+                        stow ranger
+                        stow wofi
+                    fi
+                fi
+                };;
+        [Nn]* ) ;;
+        * ) echo "Please enter 'y' or 'no'.";;
 esac
 
 

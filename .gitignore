@@ -1,4 +1,6 @@
 # Ignore multiple folders
 reaper/
+Creality
+kde/
 .stfolder/
 

@@ -129,8 +129,8 @@ alias yt-dlp-mp3='yt-dlp -x --audio-format mp3 --audio-quality 0'
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
 # Get NAS mounted - requires /mnt/NAS to exist
-alias NAS-mount='sudo mount -t cifs -o username=alecjtaylor,pass=Zil48vil,vers=1.0 //192.168.1.100/Volume_1 /mnt/NAS'
-alias NAS-unmount='sudo umount -f /mnt/NAS'
+alias NAS-mount='mount -t cifs -o username=alecjtaylor,pass=Zil48vil1337 //192.168.1.100/maindata/ /mnt/NAS'
+alias NAS-unmount='umount -f /mnt/NAS'
 
 if command -v bat >/dev/null 2>&1; then
     alias cat='bat'
