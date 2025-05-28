@@ -132,6 +132,9 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 alias NAS-mount='mount -t cifs -o username=alecjtaylor,pass=Zil48vil1337 //192.168.1.100/maindata/ /mnt/NAS'
 alias NAS-unmount='umount -f /mnt/NAS'
 
+#Hyprland network config
+alias wifi='sudo systemctl enable --now NetworkManager && nmtui'
+
 if command -v bat >/dev/null 2>&1; then
     alias cat='bat'
 fi

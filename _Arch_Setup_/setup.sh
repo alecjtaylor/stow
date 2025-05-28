@@ -4,19 +4,35 @@
 ### Functions below ###
 #######################
 
-# Print the logo
-print_logo() {
+user_Choice() {
+  while true; do
+    clear
     cat << "EOF"
-#####################################################
-#      _       _  ____ _____                        #
-#     / \     | |/ ___|_   _|                       #
-#    / _ \ _  | | |     | |                         #
-#   / ___ \ |_| | |___  | |    Set up Arch Linux    #
-#  /_/   \_\___/ \____| |_|    by AJCT              #
-#                                                   #
-#####################################################
 
+ ######################################################
+ ######################################################
+ ##      _       _  ____ _____                       ##
+ ##     / \     | |/ ___|_   _|                      ##
+ ##    / _ \ _  | | |     | |                        ##
+ ##   / ___ \ |_| | |___  | |    Set up Arch Linux   ##
+ ##  /_/   \_\___/ \____| |_|    by AJCT             ##
+ ##                                                  ##
+ ######################################################
+ ######################################################
 EOF
+echo -e "\nChoose an option:\n\n1) System Update\n2) Base System Install\n3) Hyprland Install\n4) Start Services for new build\n5) KDE (NOT YET FUNCTIONAL) \n6) Exit"
+    read -p "Enter choice [1-6]: " choice
+
+    case $choice in
+      1) update_Pacman && tweak_Pacman && check_AUR && check_Refelector ;;
+      2) echo -e "Installing base packages..." && sleep 2 &&install_packages "${PACKAGES[@]}" && sleep 2;;
+      3) echo -e "Installing Hyprland packages..." && sleep 2 && install_packages "${HYPRLAND[@]}" && sleep 2;;
+      4) echo -e "Starting Services..." && start_syncthing && start_bluetooth && start_firewall && start_stow && sleep 3;; 
+      5) echo -e "Coming soon for KDE..." && sleep 3;; #tweak_ssdm
+      6) echo -e "Bye!"; return 1 ;;
+      *) echo -e "Invalid option." ;;
+    esac
+  done
 }
 
 # Function to check if a package is installed
@@ -73,80 +89,62 @@ replace_line_in_file() {
 }
 
 #####################
-### Start of code ###
+### Arch Specific ###
 #####################
 
-# print vanity logo
-clear
-print_logo
+update_Pacman() {
+  echo -e "\nUpdating system...\n"
+  sudo pacman -Syu --noconfirm
+}
 
-#TODO - confirm what system is running
+tweak_Pacman() {
+  echo -e "\nDo you want to add tweaks to pacman (y/n): " 
+  read yn
+  case $yn in
+    [Yy]* ) 
+      replace_line_in_file "/etc/pacman.conf" "#Color" "Color" 
+      replace_line_in_file "/etc/pacman.conf" "# Misc options" "ILoveCandy"
+      replace_line_in_file "/etc/pacman.conf" "#VerbosePkgLists" "VerbosePkgLists"
+    ;; 
+    [Nn]* ) echo "No action will be taken." ;;
+    * ) echo "Please answer yes or no.";;
+  esac
+}
 
+check_AUR(){
+    if ! command -v yay &> /dev/null; then
+    echo "Installing yay AUR helper..."
+    sudo pacman -S --needed git base-devel --noconfirm
+    if [[ ! -d "yay" ]]; then
+      echo "Cloning yay repository..."
+    else
+      echo "yay directory already exists, removing it before build"
+      rm -rf yay
+    fi
 
+    git clone https://aur.archlinux.org/yay.git
 
-
-#TODO move to function depending on what type of system is running
-# Update the system first
-echo "Updating system..."
-sudo pacman -Syu --noconfirm
-
-
-#TODO check if arch and install AUR if not present. 
-# Install yay AUR helper if not present
-if ! command -v yay &> /dev/null; then
-  echo "Installing yay AUR helper..."
-  sudo pacman -S --needed git base-devel --noconfirm
-  if [[ ! -d "yay" ]]; then
-    echo "Cloning yay repository..."
-  else
-    echo "yay directory already exists, removing it..."
+    cd yay
+    echo "building yay.... yaaaaayyyyy"
+    makepkg -si --noconfirm
+    cd ..
     rm -rf yay
-  fi
+    else
+    echo "yay is already installed"
+    fi
+}
 
-  git clone https://aur.archlinux.org/yay.git
+check_Refelector() {
+  install_packages "reflector"
+  printf "\nconfiguring pacman for speed....don't worry about the [WARNINGS]\n"
+  sudo reflector --country '' --latest 50 --sort rate --save /etc/pacman.d/mirrorlist
 
-  cd yay
-  echo "building yay.... yaaaaayyyyy"
-  makepkg -si --noconfirm
-  cd ..
-  rm -rf yay
-else
-  echo "yay is already installed"
-fi
+  printf "\nChanges to pacman mirror list:\n\n"
+  cat /etc/pacman.d/mirrorlist
+  printf "\n"
+}
 
-
-#set up pacman 
-install_packages "reflector"
-printf "\nconfiguring pacman for speed....\n"
-sudo reflector --country '' --latest 50 --sort rate --save /etc/pacman.d/mirrorlist
-
-printf "\nChanges to pacman mirror list:\n\n"
-cat /etc/pacman.d/mirrorlist
-printf "\n"
-
-#replace settings in pacman conf 
-
-replace_line_in_file "/etc/pacman.conf" "#Color" "Color"
-replace_line_in_file "/etc/pacman.conf" "# Misc options" "ILoveCandy"
-replace_line_in_file "/etc/pacman.conf" "#VerbosePkgLists" "VerbosePkgLists"
-
-
-
-#TODO split up into base utils for all then distro specific tools
-# import data from pacages config file
-source packages.conf
-
-#start installing packages
-echo "Installing system utilities..."
-install_packages "${PACKAGES[@]}"
-
-read -p "Do you want to install Hyprland specific packages? (y/n): " yn
-case $yn in
-  [Yy]* ) echo "Continuing..." && install_packages "${HYPRLAND[@]}";; 
-  [Nn]* ) echo "Setup Complete" ;;
-  * ) echo "Please answer yes or no.";;
-esac
-
+tweak_ssdm(){
 read -p "Do you want to customise SDDM as a login manager? (y/n): " yn
 case $yn in
         [Yy]* )
@@ -158,8 +156,10 @@ case $yn in
         [Nn]* ) ;;
         * ) echo "Please enter 'y' or 'n'.";;
 esac
+}
 
-read -p "Do you want to select the services to start? (y/n): " yn
+start_syncthing(){
+read -p "Do you want to start the Syncthing Service? (y/n): " yn
 case $yn in
         [Yy]* )
                 {
@@ -174,8 +174,59 @@ case $yn in
         [Nn]* ) ;;
         * ) echo "please enter yes or no.";;
 esac
+}
+
+start_bluetooth(){
+read -p "Do you want to start the Bluetooth Service? (y/n): " yn
+case $yn in
+        [Yy]* )
+                {
+                echo "Starting Bluetooth..."
+                systemctl enable bluetooth.service
+                systemctl start bluetooth.service
+                } ;;
+
+        [Nn]* ) ;;
+        * ) echo "please enter yes or no.";;
+esac
+}
 
 
+start_network(){
+read -p "Do you want to start the Network Manager Service? (y/n): " yn
+case $yn in
+        [Yy]* )
+                {
+                echo "Starting Bluetooth..."
+                systemctl enable NetworkManager.service
+                systemctl start NetworkManager.service
+                } ;;
+
+        [Nn]* ) ;;
+        * ) echo "please enter yes or no.";;
+esac
+}
+
+
+
+start_firewall()
+{
+read -p "Do you want to set up a firewall? (y/n): " yn
+case $yn in
+        [Yy]* )
+                {
+                install_packages ufw
+                sudo systemctl enable --now ufw
+                sudo ufw default allow outgoing
+                sudo ufw default deny incoming
+                } ;;
+
+        [Nn]* ) ;;
+        * ) echo "please enter yes or no.";;
+esac
+}
+
+start_stow(){
 read -p "Do you want to set up stow config linking now? (y/n): " yn
 case $yn in
         [Yy]* )
@@ -204,5 +255,20 @@ case $yn in
         [Nn]* ) ;;
         * ) echo "Please enter 'y' or 'no'.";;
 esac
+}
+
+
+
+#####################
+### Start of code ###
+#####################
+
+#TODO split up into base utils for all then distro specific tools
+
+# import data from pacages config file
+source packages.conf
+
+user_Choice || exit 1
+
 
 
